@@ -192,8 +192,8 @@ func PlotTime1Vals(timestamp, v1 []float64, c1 []uint8, title string) error {
 	}
 
 	p.Title.Text = title
-	p.X.Label.Text = "Timestamp"
-	p.Y.Label.Text = "Values"
+	p.X.Label.Text = "x"
+	p.Y.Label.Text = "y"
 
 	l1, err := buildLine(timestamp, v1, c1)
 	checkErr(err)
@@ -219,8 +219,8 @@ func PlotTime2Vals(timestamp, v1, v2 []float64, c1, c2 []uint8, title string) er
 	}
 
 	p.Title.Text = title
-	p.X.Label.Text = "Timestamp"
-	p.Y.Label.Text = "Values"
+	p.X.Label.Text = "x"
+	p.Y.Label.Text = "y"
 
 	l1, err := buildLine(timestamp, v1, c1)
 	checkErr(err)
@@ -250,8 +250,8 @@ func PlotTime3Vals(timestamp, v1, v2, v3 []float64, c1, c2, c3 []uint8, title st
 	}
 
 	p.Title.Text = title
-	p.X.Label.Text = "Timestamp"
-	p.Y.Label.Text = "Values"
+	p.X.Label.Text = "x"
+	p.Y.Label.Text = "y"
 
 	l1, err := buildLine(timestamp, v1, c1)
 	checkErr(err)
@@ -275,6 +275,9 @@ func PlotTime3Vals(timestamp, v1, v2, v3 []float64, c1, c2, c3 []uint8, title st
 	return nil
 }
 
+// =================
+// = Plot builders =
+// =================
 func buildScatter(x, y []float64, c []uint8) (*plotter.Scatter, error) {
 	pv := make(plotter.XYs, len(x))
 	for i, val := range x {
@@ -301,8 +304,8 @@ func buildLine(t, v []float64, c []uint8) (*plotter.Line, error) {
 	pv := make(plotter.XYs, len(v))
 
 	for i, val := range v {
-		pv[i].Y = val
 		pv[i].X = t[i]
+		pv[i].Y = val
 	}
 
 	l, err := plotter.NewLine(pv)

@@ -287,7 +287,7 @@ func PlotTime3Vals(timestamp, v1, v2, v3 []float64, c1, c2, c3 []uint8, title st
 // ==========
 // = Hybrid =
 // ==========
-func PlotTimeScatter2Vals2Timestamps(ts1, v1, ts2, v2, ts3, v3 []float64, c1, c2, c3 []uint8, title string) error {
+func PlotTime2Scatter1Line(ts1, v1, ts2, v2, ts3, v3 []float64, c1, c2, c3 []uint8, title string) error {
 	log.Printf("Plotting %s.png", title)
 
 	// New plot

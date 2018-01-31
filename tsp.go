@@ -12,15 +12,15 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
-var Colors = map[string][]uint8{
-	"Blue":      []uint8{52, 152, 219, 255},
-	"Red":       []uint8{231, 76, 60, 255},
-	"Green":     []uint8{22, 160, 133, 255},
-	"Turquoise": []uint8{26, 188, 156, 255},
-	"Amethist":  []uint8{155, 89, 182, 255},
-	"Asphalt":   []uint8{52, 73, 94, 255},
-	"Orange":    []uint8{211, 84, 0, 255},
-}
+var (
+	ColorBlue      = []uint8{52, 152, 219, 255}
+	ColorRed       = []uint8{231, 76, 60, 255}
+	ColorGreen     = []uint8{22, 160, 133, 255}
+	ColorTurquoise = []uint8{26, 188, 156, 255}
+	ColorAmethist  = []uint8{155, 89, 182, 255}
+	ColorAsphalt   = []uint8{52, 73, 94, 255}
+	ColorOrange    = []uint8{211, 84, 0, 255}
+)
 
 func Stats(data []float64) {
 	// Calculate standard metrics
@@ -38,7 +38,7 @@ func Stats(data []float64) {
 	inds := make([]int, len(data))
 	floats.Argsort(data, inds)
 	quant25 := stat.Quantile(0.25, stat.Empirical, data, nil)
-	quant50 := stat.Quantile(0.50, stat.Empirical, data, nil)
+	// quant50 := stat.Quantile(0.50, stat.Empirical, data, nil)
 	quant75 := stat.Quantile(0.75, stat.Empirical, data, nil)
 
 	log.Printf("Mean: %0.2f", meanVal)
@@ -51,11 +51,14 @@ func Stats(data []float64) {
 	log.Printf("Variance: %0.2f", varianceVal)
 	log.Printf("Standard Deviation: %0.2f", stdDevVal)
 	log.Printf("25%% quantile: %0.2f", quant25)
-	log.Printf("50%% quantile: %0.2f", quant50)
+	// log.Printf("50%% quantile: %0.2f", quant50)
 	log.Printf("75%% quantile: %0.2f", quant75)
 }
 
-func PlotHistogram(v []float64, title string) error {
+// ==============
+// = Histograms =
+// ==============
+func PlotHistogram(v []float64, uniqs int, title string) error {
 	log.Printf("Plotting %s.png", title)
 
 	p, err := plot.New()
@@ -71,7 +74,7 @@ func PlotHistogram(v []float64, title string) error {
 		pv[i] = val
 	}
 
-	h, err := plotter.NewHist(pv, 100)
+	h, err := plotter.NewHist(pv, uniqs)
 	if err != nil {
 		return err
 	}
@@ -86,6 +89,9 @@ func PlotHistogram(v []float64, title string) error {
 	return nil
 }
 
+// ============
+// = Scatters =
+// ============
 func PlotScatterXY1Var(x1, y1 []float64, c1 []uint8, title string) error {
 	log.Printf("Plotting %s.png", title)
 
@@ -111,7 +117,7 @@ func PlotScatterXY1Var(x1, y1 []float64, c1 []uint8, title string) error {
 
 	p.Add(s1)
 
-	if err := p.Save(30*vg.Centimeter, 15*vg.Centimeter, title+".png"); err != nil {
+	if err := p.Save(60*vg.Centimeter, 15*vg.Centimeter, title+".png"); err != nil {
 		return err
 	}
 
@@ -182,6 +188,9 @@ func PlotScatterXY3Var(x1, y1, x2, y2, x3, y3 []float64, c1, c2, c3 []uint8, tit
 	return nil
 }
 
+// =============
+// = Timelines =
+// =============
 func PlotTime1Vals(timestamp, v1 []float64, c1 []uint8, title string) error {
 	log.Printf("Plotting %s.png", title)
 
@@ -275,6 +284,70 @@ func PlotTime3Vals(timestamp, v1, v2, v3 []float64, c1, c2, c3 []uint8, title st
 	return nil
 }
 
+// ==========
+// = Hybrid =
+// ==========
+func PlotTimeScatter2Vals2Timestamps(ts1, v1, ts2, v2, ts3, v3 []float64, c1, c2, c3 []uint8, title string) error {
+	log.Printf("Plotting %s.png", title)
+
+	// New plot
+	p, err := plot.New()
+	if err != nil {
+		return err
+	}
+
+	p.Title.Text = title
+	p.X.Label.Text = "x"
+	p.Y.Label.Text = "y"
+
+	s1, err := buildScatter(ts1, v1, c1)
+	checkErr(err)
+
+	s2, err := buildScatter(ts2, v2, c2)
+	checkErr(err)
+
+	l1, err := buildLine(ts3, v3, c3)
+	checkErr(err)
+
+	p.Add(s1, s2, l1)
+
+	p.Legend.Add("v1", s1)
+	p.Legend.Add("v2", s2)
+	p.Legend.Add("v2", l1)
+
+	if err := p.Save(60*vg.Centimeter, 15*vg.Centimeter, title+".png"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// =========
+// = Boxes =
+// =========
+func PlotBox(v1 []float64, title string) error {
+	log.Printf("Plotting %s.png", title)
+
+	// New plot
+	p, err := plot.New()
+	if err != nil {
+		return err
+	}
+
+	p.Title.Text = title
+
+	b1, err := buildBox(v1)
+	checkErr(err)
+
+	p.Add(b1)
+
+	if err := p.Save(15*vg.Centimeter, 15*vg.Centimeter, title+".png"); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // =================
 // = Plot builders =
 // =================
@@ -321,6 +394,21 @@ func buildLine(t, v []float64, c []uint8) (*plotter.Line, error) {
 	}
 
 	return l, nil
+}
+
+func buildBox(v []float64) (*plotter.BoxPlot, error) {
+	pv := make(plotter.Values, len(v))
+
+	for i := range v {
+		pv[i] = v[i]
+	}
+
+	b, err := plotter.NewBoxPlot(vg.Points(50), 1, pv)
+	if err != nil {
+		return b, err
+	}
+
+	return b, nil
 }
 
 // ===========
